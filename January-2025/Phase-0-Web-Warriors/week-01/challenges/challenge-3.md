@@ -1,0 +1,4 @@
+# Server Client Architecture
+## NOTE: To view full article click the link - https://webarc.hashnode.dev/preview/6784a1263af4f3d18602b15a
+
+The internet is an essential part of our daily lives, whether we’re browsing social media, streaming videos, or working online. But have you ever stopped to think about how it all works? How does a website load in seconds, or a message travel halfway across the world instantly? Behind the scenes, there’s a fascinating system at play, involving the OSI model, DNS, TCP and UDP, and countless other technologies working together. In this article, we’ll break down these key components in simple terms and explore the magic(not really you will get to know later) that makes the internet tick
