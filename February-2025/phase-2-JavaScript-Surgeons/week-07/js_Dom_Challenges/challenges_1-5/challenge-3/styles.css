@@ -4,14 +4,17 @@ body {
   margin: 0 auto;
   padding: 20px;
 }
+
 .form-group {
   margin-bottom: 15px;
 }
+
 label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
 }
+
 input,
 textarea,
 select {
@@ -20,6 +23,7 @@ select {
   border: 1px solid #ddd;
   border-radius: 4px;
 }
+
 .preview-card {
   margin-top: 30px;
   border: 1px solid #ddd;
@@ -27,13 +31,16 @@ select {
   padding: 20px;
   background-color: #f9f9f9;
 }
+
 h2 {
   margin-top: 0;
   color: #2c3e50;
 }
+
 .profile-info p {
   margin: 5px 0;
 }
+
 .profile-info strong {
   color: #34495e;
 }
