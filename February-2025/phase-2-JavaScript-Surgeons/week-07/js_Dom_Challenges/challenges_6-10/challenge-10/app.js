@@ -1,22 +1,121 @@
-/**
- * Write your challenge solution here
- */
-// Image data
-const images = [
-  {
-    url: 'https://plus.unsplash.com/premium_photo-1666863909125-3a01f038e71f?q=80&w=1986&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    caption: 'Beautiful Mountain Landscape',
-  },
-  {
-    url: 'https://plus.unsplash.com/premium_photo-1690576837108-3c8343a1fc83?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    caption: 'Ocean Sunset View',
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2041&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    caption: 'Autumn Forest Path',
-  },
-  {
-    url: 'https://plus.unsplash.com/premium_photo-1680466057202-4aa3c6329758?q=80&w=2138&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    caption: 'Urban City Skyline',
-  },
-];
+
+const gameContainer = document.querySelector(".game-container");
+const moves = document.querySelector("#moves");
+const time = document.querySelector("#time")
+
+let firstCard = null;
+let secondCard = null;
+let boardFilled = false;
+let numberOfMoves = 0;
+let winnerMoves = 0;
+
+let totalCards = new Array(16).fill(0);
+const cardValues = ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼"];
+const cardValuesCopy = [...cardValues, ...cardValues];
+shuffleCards();
+generateCards();
+
+function shuffleCards() {
+  cardValuesCopy.sort(() => Math.random() - 0.5);  // yeh 50-50 chance dega usko swap krne ke liye
+
+}
+
+function generateCards() {
+  for (let card of cardValuesCopy) {
+    const cardElement = document.createElement("div");
+    cardElement.classList.add("card");
+    const cardFrontELement = document.createElement("div");
+    const cardBackELement = document.createElement("div");
+
+    cardFrontELement.innerText = "?";
+    cardFrontELement.classList.add("card-front")
+    cardBackELement.innerText = card;
+    cardBackELement.classList.add("card-back")
+
+
+    cardElement.appendChild(cardFrontELement);
+    cardElement.appendChild(cardBackELement);
+    gameContainer.appendChild(cardElement)
+
+    cardElement.addEventListener("click", flipCard)
+
+  }
+
+}
+
+
+function flipCard() {
+  // start timer
+  startTimer();
+  if (boardFilled) return;
+  if (this === firstCard) return;
+  this.classList.add("flipped");
+  if (!firstCard) {
+    firstCard = this;
+    //console.log(firstCard)
+    return;
+  }
+  secondCard = this;
+  //console.log(secondCard)
+  numberOfMoves++;
+  moves.innerText = numberOfMoves;
+  boardFilled = true;
+  checkForMatch();
+
+
+}
+let interval;
+
+function startTimer() {
+  if (interval !== undefined) return;
+  let seconds = 0;
+  let minutes = 0;
+  interval = setInterval(() => {
+    seconds++;
+    if (seconds === 60) {
+      seconds = 0;
+      minutes++;
+    }
+    time.innerText = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`
+  }, 1000)
+
+}
+
+function checkForMatch() {
+  if (firstCard.children[1].innerText !== secondCard.children[1].innerText) {
+    setTimeout(() => {
+      firstCard.classList.remove("flipped");
+      secondCard.classList.remove("flipped");
+      resetBoard();
+    }, 500)
+  } else {
+    winnerMoves++;
+    if (winnerMoves === 8) {
+      setTimeout(() => {
+        alert(`Congratulations🔥 You won the game with ${moves.innerText} moves and ${time.innerText} taken`);
+        restartGame();
+      }, 300);
+    }
+    resetBoard();
+  }
+}
+
+function resetBoard() {
+  firstCard = null;
+  secondCard = null;
+  boardFilled = false;
+}
+
+function restartGame() {
+  clearInterval(interval);
+  interval = undefined;
+  time.innerText = "00:00";
+  moves.innerText = "0";
+  numberOfMoves = 0;
+  boardFilled = false;
+  firstCard = null;
+  secondCard = null;
+  gameContainer.innerHTML = "";
+  shuffleCards();
+  generateCards();
+}
