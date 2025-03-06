@@ -76,6 +76,11 @@ function addTasks() {
         alert("Please enter a task first !")
     }
 }
+taskInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        addTasks();
+    }
+});
 
 addButton.addEventListener('click', () => {
     addTasks()
