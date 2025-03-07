@@ -8,7 +8,7 @@ const greenButton = document.getElementById('greenButton');
 const blueButton = document.getElementById('blueButton');
 const purpleButton = document.getElementById('purpleButton');
 const resetButton = document.getElementById('resetButton');
-
+document. querySelector
 resetButton.addEventListener('click',()=>{
     mainTarget.style.color = '#34495e';
 })

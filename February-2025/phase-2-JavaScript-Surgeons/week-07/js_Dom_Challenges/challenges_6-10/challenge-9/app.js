@@ -18,10 +18,10 @@ document.addEventListener('click', (event) => {
         panel.classList.remove('active')
     }
 })
-menuItems.forEach((title) => {    
+menuItems.forEach((title) => {
     title.addEventListener("click", () => {
         alert(`You clicked ${title.innerHTML}`)
-    panel.classList.remove('active')
+        panel.classList.remove('active')
 
     })
 })
