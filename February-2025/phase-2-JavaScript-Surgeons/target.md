@@ -2,7 +2,7 @@
 
 - Introduction to JavaScript and its role in web development
 - Understanding variables and data types: `string`, `number`, `boolean`, `object`, `array`, `null`, `undefined`
-- Declaring variables with `var`, `let`, `const`
+- Declaring  variables with `var`, `let`, `const`
 - Understanding scope (Global, Local, Block Scope) and hoisting
 - Basic operators: `+`, ``, ``, `/`, `%`, `==`, `===`
 - Control flow statements: `if`, `else`, `else if`, `switch`, `ternary operator`
