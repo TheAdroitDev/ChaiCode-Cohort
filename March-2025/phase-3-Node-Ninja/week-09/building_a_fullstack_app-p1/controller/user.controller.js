@@ -68,10 +68,24 @@ const registerUser = async (req, res) => {
         const mailOptions = {
             from: process.env.MAILTRAP_SENDEREMAIL,
             to: user.email,
-            subject: "Verify Your email",
-            text: `Please click or copy and paste the following link in the browser: ${process.env.BASE_URL}/api/v1/users/verify/${token}`,
-            // html: "<b>Hello world?</b>", // html body
-        }
+            subject: "Verify Your Email",
+            text: `Click the link below to verify your email or copy and paste it into your browser: 
+            ${process.env.BASE_URL}/api/v1/users/verify/${token}`,
+            html: `
+                <h2>Email Verification</h2>
+                <p>Click the button below to verify your email:</p>
+                <a href="${process.env.BASE_URL}/api/v1/users/verify/${token}" 
+                   style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; 
+                          text-decoration: none; border-radius: 5px;">
+                    Verify Email
+                </a>
+                <p>If the button doesn't work, copy and paste the following link into your browser:</p>
+                <p><a href="${process.env.BASE_URL}/api/v1/users/verify/${token}">
+                    ${process.env.BASE_URL}/api/v1/users/verify/${token}
+                </a></p>
+            `,
+        };
+
 
         // send email
         await transporter.sendMail(mailOptions);
@@ -81,6 +95,7 @@ const registerUser = async (req, res) => {
             message: "User registered successfully!",
             success: true
         })
+
     } catch (error) {
         // error handling
         res.status(500).json({
@@ -126,6 +141,8 @@ const verifyUser = async (req, res) => {
         message: "User Verified successfully!",
         success: true
     })
+    console.log('User Verified successfully!');
+
 };
 
 const login = async (req, res) => {
@@ -141,7 +158,7 @@ const login = async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({
-                message: "Invalid credentials",
+                message: "User not registered",
             });
         }
 
@@ -155,7 +172,7 @@ const login = async (req, res) => {
         }
 
         // token
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWTSECRET, { expiresIn: "24h" });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWTSECRET.toString(), { expiresIn: "24h" });
 
         const cookieOptions = {
             httpOnly: true,
@@ -176,6 +193,8 @@ const login = async (req, res) => {
                 role: user.role
             }
         });
+        console.log('Login Successfull!');
+
     } catch (error) {
         res.status(500).json({
             message: "Internal Server Got drunked while logging!",
