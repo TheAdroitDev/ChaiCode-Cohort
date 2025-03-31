@@ -21,10 +21,10 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
-    res.send('Operation Strix!');
+    res.send('Code F!');
 });
-app.get('/codef', (req, res) => {
-    res.send('cherry ke phool khil rhe hai!');
+app.get('/stix', (req, res) => {
+    res.send('Code GO006!');
 });
 
 // user routes
