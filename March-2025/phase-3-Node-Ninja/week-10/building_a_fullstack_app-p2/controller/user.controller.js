@@ -233,13 +233,142 @@ const getMe = async function (req, res) {
 }
 
 const logout = async function (req, res) {
-
+    try {
+        res.cookie("token", "", {});
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully",
+        });
+    } catch (error) {
+        console.log('Internal server error while logging out!')
+        res.status(500).json({
+            message: "Internal server error while logging out!",
+            error,
+            success: false,
+        });
+    }
 }
 
 const forgotPassword = async function (req, res) {
+    try {
+        // get email
+        const { email } = req.body
+
+        // validation 
+        if (!email) {
+            res.status(400).json(
+                { message: "email is required" }
+            )
+        };
+
+        // find user based on email
+        const user = await User.findOne({ email });
+
+        // validation
+        if (!user) {
+            return res.status(400).json(
+                { message: "User not found" }
+            );
+        }
+
+        // create token
+        const resetPassword = crypto.randomBytes(32).toString("hex")
+
+        // reset token + reset expiry => Date.now() + 10 * 60 * 1000 => user.save()
+        user.resetPasswordToken = resetPassword;
+        user.resetPasswordExpires = Date.now() + 10 * 60 * 1000
+
+        await user.save()
+
+        // send mail => design url
+        // 1. create transporter
+        const transporter = nodemailer.createTransport({
+            host: process.env.MAILTRAP_HOSTNAME,
+            port: process.env.MAILTRAP_PORT,
+            secure: false, // true for port 465, false for other ports
+            auth: {
+                user: process.env.MAILTRAP_USERNAME,
+                pass: process.env.MAILTRAP_PASSWORD,
+            },
+        });
+
+        // 2. create mailoptions
+        const mailOptions = {
+            from: process.env.MAILTRAP_SENDEREMAIL,
+            to: user.email,
+            subject: "Password Reset Request",
+            text: `Click the following link to reset your password: 
+            {process.env.BASE_URL}/api/v1/users/resetpassword/${resetPassword} 
+            This link is valid for 10 minutes.`,
+        };
+
+        // send email
+        await transporter.sendMail(mailOptions);
+
+        console.log("Password reset link sent")
+        res.status(200).json({
+            message: "Password reset link sent",
+            success: true
+        });
+    } catch (error) {
+        console.log("Internal server error while forgetting password", error)
+        res.status(500).json({
+            message: "Internal server error while forgetting password!",
+            error,
+            success: false,
+        });
+    }
 }
 
 const resetPassword = async function (req, res) {
+    // collect token from params
+    const { token } = req.params;
+
+    // password from req.body
+    const { password, confPassword } = req.body;
+
+    if (!password || !confPassword) {
+        return res.status(400).json({ message: "Both password fields are required" });
+    }
+    if (password !== confPassword) {
+        return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() },
+        });
+
+        // validation
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token", success: false });
+        }
+
+        // set password in user
+        user.password = password
+
+        // resetToken, resetExpiry => reset
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        // save
+        await user.save()
+
+        res.status(200).json(
+            {
+                message: "Password reset successful",
+                success: true
+            }
+        );
+        console.log("Password reset successful")
+    } catch (error) {
+        console.log('Internal Server error while resseting password');
+        res.status(500).json({
+            message: "Internal Server error while resseting password",
+            success: false,
+        })
+    }
 }
-export { registerUser, verifyUser, login };
+export { registerUser, verifyUser, login, getMe, resetPassword, forgotPassword };
 
