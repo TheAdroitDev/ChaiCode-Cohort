@@ -68,20 +68,20 @@ const registerUser = async (req, res) => {
         const mailOptions = {
             from: process.env.MAILTRAP_SENDEREMAIL,
             to: user.email,
-            subject: "Verify Your Email",
-            text: `Click the link below to verify your email or copy and paste it into your browser: 
-            ${process.env.BASE_URL}/api/v1/users/verify/${token}`,
+            subject: "Password Reset Request",
+            text: `Click the link below to Password Reset Request or copy and paste it into your browser: 
+            $${process.env.BASE_URL}/api/v1/users/verify/${token}`,
             html: `
                 <h2>Email Verification</h2>
-                <p>Click the button below to verify your email:</p>
-                <a href="${process.env.BASE_URL}/api/v1/users/verify/${token}" 
+                <p>Click the button below to Password Reset Request:</p>
+                <a href="$${process.env.BASE_URL}/api/v1/users/verify/${token}" 
                    style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #007bff; 
                           text-decoration: none; border-radius: 5px;">
                     Verify Email
                 </a>
                 <p>If the button doesn't work, copy and paste the following link into your browser:</p>
-                <p><a href="${process.env.BASE_URL}/api/v1/users/verify/${token}">
-                    ${process.env.BASE_URL}/api/v1/users/verify/${token}
+                <p><a href="$${process.env.BASE_URL}/api/v1/users/verify/${token}">
+                    $${process.env.BASE_URL}/api/v1/users/verify/${token}
                 </a></p>
             `,
         };
@@ -291,15 +291,28 @@ const forgotPassword = async function (req, res) {
                 pass: process.env.MAILTRAP_PASSWORD,
             },
         });
-
+       
         // 2. create mailoptions
         const mailOptions = {
             from: process.env.MAILTRAP_SENDEREMAIL,
             to: user.email,
             subject: "Password Reset Request",
             text: `Click the following link to reset your password: 
-            {process.env.BASE_URL}/api/v1/users/resetpassword/${resetPassword} 
+            ${process.env.BASE_URL}/api/v1/users/resetpassword/${resetPassword} 
             This link is valid for 10 minutes.`,
+            html: `
+                <h2>Password Reset Request</h2>
+                <p>Click the button below to Password Reset Request:</p>
+                <a href="${process.env.BASE_URL}/api/v1/users/resetpassword/${resetPassword}" 
+                   style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #708775; 
+                          text-decoration: none; border-radius: 5px;">
+                    Reset Password
+                </a>
+                <p>If the button doesn't work, copy and paste the following link into your browser:</p>
+                <p><a href="$${process.env.BASE_URL}/api/v1/users/resetpassword/${resetPassword}">
+                    ${process.env.BASE_URL}/api/v1/users/resetpassword/${resetPassword}
+                </a></p>
+            `,
         };
 
         // send email
