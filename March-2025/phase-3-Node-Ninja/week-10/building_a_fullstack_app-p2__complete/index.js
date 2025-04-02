@@ -26,7 +26,7 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
     res.send('Code F!');
 });
-app.get('/stix', (req, res) => {
+app.get('/strix', (req, res) => {
     res.send('Code GO006!');
 });
 
