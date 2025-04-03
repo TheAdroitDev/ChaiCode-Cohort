@@ -194,6 +194,11 @@ const login = async (req, res) => {
             }
         });
         console.log('Login Successfull!');
+        console.log({user: {
+            id: user._id,
+            name: user.name,
+            role: user.role
+        }});
 
     } catch (error) {
         res.status(500).json({
