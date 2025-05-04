@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NEON_URL")
+}
+
+model User {
+  id                  String   @id @default(cuid())
+  name                String
+  username            String
+  email               String   @unique
+  password            String
+  role                String   @default("user")
+  isVerified          Boolean  @default(false)
+  verificationToken   String?
+  passwordResetToken  String?
+  passwordresetExpiry String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now())
+}
