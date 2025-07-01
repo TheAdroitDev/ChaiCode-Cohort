@@ -1,4 +1,4 @@
-// const http = require ('http');
+const http = require ('http');
 const express = require('express');
 
 const app = express();
@@ -31,9 +31,9 @@ app.listen(8000, function () {
 })
 
 
-/* const server = http.createServer(app);
+const server = http.createServer(app);
 server.listen(8000,function(){
     console.log('server started');
-}); */
+});
 
 
