@@ -26,7 +26,7 @@
 ---
 
 ## 🚀 Explore
-## [My Website](https://adroitdev.fun/) - 
+## [My Website](https://adroitdev.fun/) - [adroitdev.fun](https://adroitdev.fun/)
 ## [Blogs](https://hashnode.com/@theadroitdev) - Read my blogs on hashnode to get adept at some topics
 ## [Assignments](https://theadroitdev.github.io/adroitdev.fun/) - View my all assignment and projects
 ## [Eagle View](https://github.com/theadroitdev/ChaiCode-Cohort) - Get a eagle view of my full coding journey 
