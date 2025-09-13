@@ -2,6 +2,28 @@ import { asyncHandler } from "../utils/async-handler.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/api-error.js";
+import { sendEmail, forgotPasswordMailgenContent, emailVerificationMailgenContent } from "../utils/mail.js"
+
+const generateAccessAndRefreshTokens = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+
+        // attach refresh token to the user document to avoid refreshing the access token with multiple refresh tokens
+        user.refreshToken = refreshToken;
+
+        await user.save({ validateBeforeSave: false });
+        return { accessToken, refreshToken };
+    } catch (error) {
+        throw new ApiError(
+            500,
+            "Something went wrong while generating the access token",
+        );
+    }
+};
+
 
 const registerUser = asyncHandler(async (req, res) => {
     // get data
@@ -22,34 +44,102 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // create new user 
     const user = await User.create({
-        username,
-        fullname,
         email,
         password,
-        role
+        username,
+        isEmailVerified: false,
     })
-
 
     //if user not registered
     if (!user) {
-        throw new ApiError((400), "User not registered")
+        throw new ApiError((400), "User not registered");
+
     }
 
+    // create tokens
+    const { unHashedToken, hashedToken, tokenExpiry } = user.generateTemporaryToken()
+
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpiry = tokenExpiry;
     // save user
     await user.save()
 
     // send email
+    await user.sendEmail({
+        email: user?.email,
+        subject: "Please verify your email",
+        mailgenContent: emailVerificationMailgenContent(
+            user.username,
+            `${req.protocol}://${req.get(
+                "host",
+            )}/api/v1/users/verify-email/${unHashedToken}`,
+        ),
+    })
+
+    const createdUser = await User.findById(user._id).select(
+        "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
+    );
+
+    if (!createdUser) {
+        throw new ApiError(500, "Something went wrong while registering the user");
+    }
+
+
     return res.status(201).json(
-        new ApiResponse(201, "user registered success", user)
+        new ApiResponse(200, "Users registered successfully and verification email has been sent on your email.", { user: createdUser })
     )
 
 })
 
 const loginUser = asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const { email, username, password } = req.body;
 
-    // validation
+    // validation 
+    if (!username || !email) {
+        throw new ApiError(401, "Username or email is required")
+    }
 
+    // find user based on either by username or email
+    const user = await user.findOne({
+        $or: [{ username }, { email }],
+    })
+
+    if (!user) {
+        throw new ApiError(401, "User not registered")
+
+    }
+
+    // compare the incoming password with hashed password 
+    if (password) {
+        const isPasswordValid = await user.isPasswordCorrect(password)
+    }
+    else {
+        throw new ApiError(401, "Password is incorrect")
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+        user._id
+    );
+
+    // get the user document ignoring the password and refreshToken field
+    const loggedInUser = await User.findById(user._id).select(
+        "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
+    );
+
+
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV,
+    }
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options) // set the access token in the cookie
+        .cookie("refreshToken", refreshToken, options) // set the refresh token in the cookie
+        .json(
+            new ApiResponse(201, { user: loggedInUser, accessToken, refreshToken }, // send access and refresh token in response if client decides to save them by themselves
+                "User logged in successfully",)
+        )
 })
 
 const logoutUser = asyncHandler((req, res) => {
@@ -101,4 +191,4 @@ const getCurrentUser = asyncHandler((req, res) => {
 
 })
 
-export { registerUser }
+export { registerUser, loginUser }
