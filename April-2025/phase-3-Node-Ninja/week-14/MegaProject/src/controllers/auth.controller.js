@@ -142,24 +142,61 @@ const loginUser = asyncHandler(async (req, res) => {
         )
 })
 
-const logoutUser = asyncHandler((req, res) => {
-    const { email, username, password, role } = req.body;
+const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user_id,
+        {
+            $set: {
+                refreshToken: "",
+            },
+        },
+        { new: true }
+    );
 
-    // validation
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV
+    }
 
+    return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(
+        new ApiResponse(200, "User logged out", {})
+    )
 })
 
-const verifyEmail = asyncHandler((req, res) => {
-    const { email, username, password, role } = req.body;
+const verifyEmail = asyncHandler(async (req, res) => {
+    const { verificationToken } = req.params;
 
-    // validation
+    if (!verificationToken) {
+        throw new ApiError(400, "User verification token is missing")
+    }
 
+    // generate a hash from the token that we are receiving
+    const hashedToken = crypto.createHash("sha256").update(verificationToken).digest("hex");
+
+    const user = await User.findOne({
+        emailVerificationToken: hashedToken,
+        emailVerificationExpiry: { $gt: Date.now() },
+    })
+
+    if (!user) {
+        throw new ApiError(489, "Token is expired or invalid")
+    }
+
+
+    // If we found the user that means the token is valid
+    // Now we can remove the associated email token and expiry date as we no  longer need them
+    user.emailVerificationToken = undefined
+    user.emailVerificationExpiry = undefined
+    // turn the emailVerification flag to true
+    user.isEmailVerified = true;
+
+    await user.save()
+
+    return res.status(200).json(new ApiResponse(200, "Email is verified", { isEmailVerified: true }))
 })
 
-const resendVerificationEmail = asyncHandler((req, res) => {
-    const { email, username, password, role } = req.body;
-
-    // validation
+const resendVerificationEmail = asyncHandler(async(req, res) => {
+    
 
 })
 
@@ -191,4 +228,4 @@ const getCurrentUser = asyncHandler((req, res) => {
 
 })
 
-export { registerUser, loginUser }
+export { registerUser, loginUser, logoutUser, verifyEmail }
