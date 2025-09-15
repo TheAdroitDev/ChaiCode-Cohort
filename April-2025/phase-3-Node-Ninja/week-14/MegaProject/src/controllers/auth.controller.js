@@ -195,9 +195,40 @@ const verifyEmail = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, "Email is verified", { isEmailVerified: true }))
 })
 
-const resendVerificationEmail = asyncHandler(async(req, res) => {
-    
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user?._id);
 
+    if (!user) {
+        throw new ApiError(404, "User does not exists");
+    }
+
+    if (user.isEmailVerified) {
+        throw new ApiError(409, "User is already verified");
+    }
+
+    // create tokens
+    const { unHashedToken, hashedToken, tokenExpiry } = user.generateTemporaryToken()
+
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpiry = tokenExpiry;
+    // save user
+    await user.save()
+
+    // send email
+    await user.sendEmail({
+        email: user?.email,
+        subject: "Please verify your email",
+        mailgenContent: emailVerificationMailgenContent(
+            user.username,
+            `${req.protocol}://${req.get(
+                "host",
+            )}/api/v1/users/verify-email/${unHashedToken}`,
+        ),
+    })
+
+    return res.status(201).json(
+        new ApiResponse(200, "Mail has been sent to your mail ID", { user: createdUser })
+    )
 })
 
 const refreshAccessToken = asyncHandler((req, res) => {
@@ -228,4 +259,4 @@ const getCurrentUser = asyncHandler((req, res) => {
 
 })
 
-export { registerUser, loginUser, logoutUser, verifyEmail }
+export { registerUser, loginUser, logoutUser, verifyEmail, resendVerificationEmail}
